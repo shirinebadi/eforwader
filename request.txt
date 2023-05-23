@@ -1,0 +1,21 @@
+POST /test/email HTTP/1.1
+Host:  https://kspd1x26p1.execute-api.eu-central-1.amazonaws.com/test/email
+Content-Type: multipart/form-data; boundary=MyBoundary
+
+--MyBoundary
+Content-Disposition: form-data; name="subject"
+
+Test Email
+--MyBoundary
+Content-Disposition: form-data; name="to"
+
+recipient@example.com
+--MyBoundary
+Content-Disposition: form-data; name="from"
+
+sender@example.com
+--MyBoundary
+Content-Disposition: form-data; name="body-plain"
+
+Hello, this is the email body.
+--MyBoundary--
