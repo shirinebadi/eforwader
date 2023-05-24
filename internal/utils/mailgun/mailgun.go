@@ -52,8 +52,6 @@ func (m *MailgunEventParser) MailgunEventParser(body string) (*MailgunEventParse
 			bodyBytes, _ := ioutil.ReadAll(part)
 			log.Println("Body:", string(bodyBytes))
 			mailgunEventParsed.BodyPlain = string(bodyBytes)
-
-			log.Println(partName)
 		}
 
 	}

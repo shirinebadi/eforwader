@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"strings"
+	elasticsearch "testAWS/connection/elastic-search"
 	"testAWS/internal/utils/mailgun"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -20,11 +21,17 @@ func (h *EventHandler) HandleRequest(ctx context.Context, req events.APIGatewayP
 		Boundary: boundary,
 	}
 
+	es := &elasticsearch.ElasticSearch{}
+
 	mailgunEventParsed, err := mailgunEventParser.MailgunEventParser(body)
 	if err != nil {
 		return events.APIGatewayProxyResponse{StatusCode: http.StatusBadRequest}, err
 	}
 
-	return events.APIGatewayProxyResponse{StatusCode: http.StatusOK, Body: string("from: " + mailgunEventParsed.From + "subject: " + mailgunEventParsed.Subject + "body: " + mailgunEventParsed.BodyPlain)}, nil
+	rule, err := es.QueryRule(mailgunEventParsed.To[0])
+	if err != nil {
+		return events.APIGatewayProxyResponse{StatusCode: http.StatusBadRequest}, err
+	}
 
+	return events.APIGatewayProxyResponse{StatusCode: http.StatusOK, Body: rule.String()}, nil
 }
