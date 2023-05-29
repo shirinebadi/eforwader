@@ -1,29 +1,45 @@
 package elasticsearch
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/elasticsearchservice"
+	"encoding/json"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"testAWS/internal/config"
+
+	"testAWS/internal/model"
 )
 
-type ElasticSearch struct {
-	//TODO: config
+type ElasticSearchClient struct {
+	Config     config.ElasticConfig
+	DomainName string
 }
 
-func (es *ElasticSearch) QueryRule(domainName string) (*elasticsearchservice.DescribeElasticsearchDomainOutput, error) {
-	svc := elasticsearchservice.New(session.Must(session.NewSession()))
+func (es *ElasticSearchClient) QueryRule(index string) (*model.Rule, error) {
+	client := &http.Client{}
 
-	// Specify the search query parameters
-	searchInput := &elasticsearchservice.DescribeElasticsearchDomainInput{
-		DomainName: aws.String(domainName),
-		// ... specify other parameters as needed
-	}
-
-	// Execute the search query
-	searchOutput, err := svc.DescribeElasticsearchDomain(searchInput)
+	rule := &model.Rule{}
+	req, err := http.NewRequest("GET", string(es.Config.Hosts+index+"/_search?pretty=true"), nil)
 	if err != nil {
-		return nil, err
+		return rule, err
+	}
+	req.SetBasicAuth(es.Config.Username, es.Config.Password)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return rule, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+
+	var response model.Response
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		log.Println("Error unmarshaling JSON:", err)
+		log.Println(string(body))
+		return rule, err
 	}
 
-	return searchOutput, nil
+	return &response.Hits.Hits[0].Source, nil
 }

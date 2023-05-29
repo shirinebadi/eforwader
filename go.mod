@@ -7,4 +7,8 @@ require (
 	github.com/aws/aws-sdk-go v1.44.267
 )
 
-require github.com/jmespath/go-jmespath v0.4.0 // indirect
+require (
+	github.com/docker/docker v24.0.1+incompatible
+	github.com/elastic/go-elasticsearch/v7 v7.17.10
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
+)

@@ -2,9 +2,11 @@ package handler
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"strings"
 	elasticsearch "testAWS/connection/elastic-search"
+	"testAWS/internal/config"
 	"testAWS/internal/utils/mailgun"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -21,17 +23,27 @@ func (h *EventHandler) HandleRequest(ctx context.Context, req events.APIGatewayP
 		Boundary: boundary,
 	}
 
-	es := &elasticsearch.ElasticSearch{}
+	elasticConfig := config.ElasticConfig{
+		Hosts:    "https://search-rulestest-w3xr76s5lrzjqwsicj66oywwyy.eu-central-1.es.amazonaws.com/",
+		Username: "shirine",
+		Password: "Sh123456irin!",
+	}
+
+	es := &elasticsearch.ElasticSearchClient{
+		Config: elasticConfig,
+	}
 
 	mailgunEventParsed, err := mailgunEventParser.MailgunEventParser(body)
 	if err != nil {
 		return events.APIGatewayProxyResponse{StatusCode: http.StatusBadRequest}, err
 	}
 
-	rule, err := es.QueryRule(mailgunEventParsed.To[0])
+	log.Println(mailgunEventParsed)
+
+	rule, err := es.QueryRule("rule")
 	if err != nil {
 		return events.APIGatewayProxyResponse{StatusCode: http.StatusBadRequest}, err
 	}
 
-	return events.APIGatewayProxyResponse{StatusCode: http.StatusOK, Body: rule.String()}, nil
+	return events.APIGatewayProxyResponse{StatusCode: http.StatusOK, Body: string(rule.Field + " " + rule.Operator + " " + rule.Variable)}, nil
 }
