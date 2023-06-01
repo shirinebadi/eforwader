@@ -1,0 +1,22 @@
+{
+    "name": "EmailRules",
+    "version": "0.0.1",
+    "ruleEntries": [
+      {
+        "": "ExampleRule1",
+        "description": "Example Rule 1",
+        "salience": 10,
+        "when": {
+          "$type": [
+            { "$operator": [ "$field", "$variable"] }
+          ]
+        },
+        "then": {
+          "actions": [
+            {"Log": "Email is and meets the specified condition."}
+          ]
+        }
+      }
+    ]
+  }
+  

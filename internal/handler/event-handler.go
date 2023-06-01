@@ -7,6 +7,7 @@ import (
 	"strings"
 	elasticsearch "testAWS/connection/elastic-search"
 	"testAWS/internal/config"
+	ruleengine "testAWS/internal/rule-engine"
 	"testAWS/internal/utils/mailgun"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -45,5 +46,17 @@ func (h *EventHandler) HandleRequest(ctx context.Context, req events.APIGatewayP
 		return events.APIGatewayProxyResponse{StatusCode: http.StatusBadRequest}, err
 	}
 
-	return events.APIGatewayProxyResponse{StatusCode: http.StatusOK, Body: string(rule.Field + " " + rule.Operator + " " + rule.Variable)}, nil
+	log.Println(rule)
+
+	ruleEngine, err := ruleengine.NewRuleEngine(rule, mailgunEventParsed)
+	if err != nil {
+		return events.APIGatewayProxyResponse{StatusCode: http.StatusBadRequest}, err
+	}
+
+	err = ruleEngine.ExecuteRule()
+	if err != nil {
+		return events.APIGatewayProxyResponse{StatusCode: http.StatusBadRequest}, err
+	}
+
+	return events.APIGatewayProxyResponse{StatusCode: http.StatusOK}, nil
 }
